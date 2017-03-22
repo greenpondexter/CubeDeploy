@@ -169,5 +169,5 @@ let removeUnwantedDimensions (cConn : Cube ) =
     let settings = getSettings 
     match settings with
     | {meg = true; etg = false; } -> dropEtg cConn   
-//    | {meg = false; etg = true; } -> dropMeg cConn
-//    | {meg = false; etg = false; } -> neitherEpsEnabled cConn 
+    | {meg = false; etg = true; } -> dropMeg cConn
+    | {meg = false; etg = false; } -> neitherEpsEnabled cConn 
