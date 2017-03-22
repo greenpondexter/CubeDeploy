@@ -15,8 +15,14 @@ type ParmConfig = {
        etg   : bool;
        }
 
+type UpdateType = 
+    |CUBE
+    |DATABASE
+    |BOTH
+
 type ActionType = 
-    |DIMENSION  
+    |DB_DIMENSION  
+    |CUBE_DIMENSION
     |MEASURE_GROUP  
     |MEASURE 
 
@@ -41,13 +47,20 @@ let getSettings  =
         |> List.map(fun q -> miParmQuery q) 
     { claim=sts.Item(0); meg=sts.Item(1); etg=sts.Item(2);}
 
+let updateSource (updType: UpdateType) (con:Cube) =
+    match updType with
+    |CUBE       -> con.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
+    |DATABASE   -> con.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
+    |BOTH       -> con.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
+                   con.Parent.Update(UpdateOptions.ExpandFull, UpdateMode.Default)       
+
 let removeMeasure (upd:(string * string)) (con:Cube) =
     let (mg,m) = upd
     try con.MeasureGroups.GetByName(mg).Measures.Remove(m)
     with | :? Microsoft.AnalysisServices.AmoException -> printfn "Couldn't find MeasureGroup: %s" (fst upd)
 
 let removeDimension (dim:string) (con:Cube) = 
-    try con.Dimensions.Remove(dim)
+    try con.Dimensions.Remove(dim) 
     with | :? Microsoft.AnalysisServices.AmoException -> printfn "Couldn't find Dimension: %s" dim
 
 let removeMeasureGroup (mg:string) (con:Cube) =
@@ -59,7 +72,9 @@ let removeItem (items:ActionInput) (action:ActionType) (con: Cube) : Cube =
     match items with
     |Sng(items) -> 
         match action with
-            |DIMENSION -> 
+            |CUBE_DIMENSION -> 
+                items |> List.map (fun (dim:string) -> removeDimension dim con)
+            |DB_DIMENSION -> 
                 items |> List.map (fun (dim:string) -> removeDimension dim con)
             |MEASURE_GROUP ->
                 items |> List.map (fun (mg:string) -> removeMeasureGroup mg con)
@@ -69,24 +84,18 @@ let removeItem (items:ActionInput) (action:ActionType) (con: Cube) : Cube =
 let updateItem (items:(string * string) list) (action:ActionType) (con:Cube) : Cube =
     
     match action with
-    |DIMENSION -> 
+    |DB_DIMENSION -> 
         items |> List.map (fun (upd:string*string) -> con.Parent.Dimensions.GetByName(fst upd).Name = snd upd ) 
+    |CUBE_DIMENSION -> 
+        items |> List.map (fun (upd:string*string) -> con.Dimensions.GetByName(fst upd).Name = snd upd ) 
     |MEASURE_GROUP ->
         items |> List.map (fun (upd:string*string) -> con.MeasureGroups.GetByName(fst upd).Name = snd upd)
     |MEASURE ->
         items |> List.map (fun (upd:string*string) -> con.MeasureGroups.GetByName(fst upd).Name = snd upd)
     con
 
-let dropMeg (cConn : Cube) = 
+let dropEtg (cConn : Cube) = 
     
-    let up = [("ddProvider_ETG_Attrib","Provider - PCP Episode Basis");
-    ("ddProvider_PCP_Attrib 2","Provider - PCP Attrib Episode Basis");
-    ("ddMemberInfo 1","Member Info - Episode Basis");
-    ("ddUDD  2","Client Specific - Episode Basis");
-    ("ddCCHGCategory 2","CCHG - Episode End Basis");
-    ("ddDate_EpisodeEnd 1","Date - Episode Max Month");
-    ]
-
     let dR = ["ddProvider_ETG_Attrib";
     "ddProvider_PCP 1";
     "ddProvider_PCP_Attrib 1";
@@ -97,17 +106,17 @@ let dropMeg (cConn : Cube) =
     "ddETG"]
     
     cConn
-    |> removeItem  (Sng(["RPT ETG";"ddProvider_ETG_Attrib"])) DIMENSION
+    |> removeItem  (Sng(["RPT ETG";"ddProvider_ETG_Attrib"])) DB_DIMENSION
     |> removeItem (Dbl([("Services","ETG EPISODE COUNT ALLOWED PRORATE");])) MEASURE
     |> removeItem (Sng(["RPX ETG PROFILING"])) MEASURE_GROUP
-    |> updateItem ([("ddMeg", "Episode")]) DIMENSION 
+    |> updateItem ([("ddMeg", "Episode")]) DB_DIMENSION 
     |> updateItem ([("RPX MEG PROFILING","Episode Profiling")])  MEASURE_GROUP 
-    |> removeItem (Sng(dR)) DIMENSION 
+    |> removeItem (Sng(dR)) CUBE_DIMENSION 
     |> removeItem (Sng(["RPX ETG PROFILING"])) MEASURE_GROUP
     
-    cConn.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
+    updateSource BOTH cConn
 
-let dropEtg (cConn : Cube) =
+let dropMeg (cConn : Cube) =
     
     let dR = ["ddProvider_PCP 2";"ddProvider_PCP_Attrib 2";"ddMemberInfo 1";"ddUDD 2";"ddCCHGCategory 2";"ddDate_EpisodeEnd 1";
               "ddETG";"ddProvider_ETG_Attrib";"ddProvider_PCP 1";"ddProvider_PCP_Attrib 1";"ddMemberInfo";"ddUDD 1";
@@ -115,8 +124,9 @@ let dropEtg (cConn : Cube) =
     
     cConn
     |> removeItem (Dbl([("Services","MEG EPISODE COUNT ALLOWED PRORATE");])) MEASURE
-    |> removeItem (Sng(dR)) DIMENSION 
-    |> updateItem [("ddMEG", "Episode");] DIMENSION 
+    |> removeItem (Sng(["ddETG";"ddProvider_ETG_Attrib";])) DB_DIMENSION
+    |> removeItem (Sng(dR)) CUBE_DIMENSION 
+    |> updateItem [("ddMEG", "Episode");] CUBE_DIMENSION 
 
     let getMeasureGroupAttribute (c: MeasureGroupDimension) = 
         let m = c :?> RegularMeasureGroupDimension
@@ -135,22 +145,26 @@ let dropEtg (cConn : Cube) =
         n.ColumnID = "etg_max_incurred_date" 
         
                        
-    let c = cConn.MeasureGroups.GetByName("Services").Dimensions
+    cConn.MeasureGroups.GetByName("Services").Dimensions
             |> Seq.cast<MeasureGroupDimension>
-            |> Seq.find (fun i -> i.CubeDimensionID = "ddDate_EpisodeEnd")
+            |> Seq.find (fun dim -> dim.CubeDimensionID = "ddDate_EpisodeEnd")
             |> getMeasureGroupAttribute 
             |> getMeasureGroupKeyColumn
             |> updateKeyColumnBinding 
     true 
-               
-    cConn.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
-
     
-    true  
-
+    updateSource BOTH cConn
+    
 let neitherEpsEnabled (cConn : Cube) =
     
-    let dR = ["ddETG";
+    let dR = [
+        "ddMemberInfo 1";
+        "ddCCHGCategory 2";
+        "ddUDD 2";
+        "ddProvider_PCP 2";
+        "ddDate_EpisodeEnd 1";
+        "ddProvider_PCP_Attrib 2";
+        "ddETG";
         "ddProvider_ETG_Attrib";
         "ddProvider_PCP 1";
         "ddProvider_PCP_Attrib 1";
@@ -160,14 +174,16 @@ let neitherEpsEnabled (cConn : Cube) =
         "ddDate_EpisodeEnd";]
     
     cConn
-    |> removeItem (Sng(dR)) DIMENSION                               
+    |> removeItem (Sng(dR)) DB_DIMENSION                               
+    |> removeItem (Dbl([("Services","ETG EPISODE COUNT ALLOWED PRORATE");("Services", "MEG EPISOEDE COUNT ALLOWED PRORATE");])) MEASURE
     |> removeItem (Sng(["RPX ETG PROFILING";"RPX MEG PROFILING"])) MEASURE_GROUP
+    |> updateItem [("ddMEG", "Episode");] CUBE_DIMENSION 
 
-    cConn.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
+    updateSource BOTH cConn
 
 let removeUnwantedDimensions (cConn : Cube ) = 
     let settings = getSettings 
     match settings with
-    | {meg = true; etg = false; } -> dropEtg cConn   
-    | {meg = false; etg = true; } -> dropMeg cConn
-    | {meg = false; etg = false; } -> neitherEpsEnabled cConn 
+    | {meg = true; etg = false; }   -> dropEtg cConn   
+    | {meg = false; etg = true; }   -> dropMeg cConn
+    | {meg = false; etg = false; }  -> neitherEpsEnabled cConn 
