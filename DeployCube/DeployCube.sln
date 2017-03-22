@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DeployCube", "ConsoleApplication1\DeployCube.fsproj", "{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
