@@ -15,7 +15,7 @@ type AggDesign = {
     mgId  : string;
 }
 
-let aggDesignQuery = 
+let aggDesignQuery : seq<AggDesign> = 
     query {
         for row in aggDesignTable do
         select row
@@ -25,7 +25,7 @@ let aggDesignQuery =
 let aggIdQuery (id:string) = 
     query {
         for row in aggTable do
-        where (row.AggID = id)
+        where (row.AggDesignID = id)
         select row.AggID 
     }
     |> Seq.map (fun row -> row)
@@ -42,30 +42,33 @@ let aggCubeDimIdQuery (id:string) =
 let updateAgg (aggInfo:AggDesign) (cConn: Cube) =
     
     let {desId = des; mgId = mg;} = aggInfo
-    let aggDesign = cConn.MeasureGroups.GetByName(mg)
+    let aggDesign = cConn.MeasureGroups.Find(mg)
                                    .AggregationDesigns
                                    .GetByName(des)
     
     let aggIds = aggIdQuery des  
     for aggId in aggIds do
-        match aggDesign.Aggregations.GetByName(aggId) with
+        match aggDesign.Aggregations.Find(aggId) with
         |null        -> (aggDesign.Aggregations.Add(aggId)) :> obj
         |Aggregation -> aggDesign.Dimensions.Clear() :> obj
 
         let aggCubeDims = aggCubeDimIdQuery aggId
         for pair in aggCubeDims do
-            let aggDim = aggDesign.Dimensions.Find(fst pair)
+            let mutable aggDim = aggDesign.Dimensions.Find(fst pair)
             match aggDim with
-            |null -> Some(aggDesign.Dimensions.Add(fst pair))
+            |null -> Some(aggDim <- aggDesign.Dimensions.Add(fst pair))
             |_    -> None  
-            aggDim.Attributes.Add(snd pair)
-         
+            try 
+                aggDim.Attributes.Add(snd pair) :> obj
+            with | :? System.InvalidOperationException -> printfn "Attribute %s is allready associated with Dim %s" (snd pair) (fst pair) :> obj
+
     aggDesign.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
 
-let aggDesignLooper (cConn: Cube) =
+let createAggregations (cConn: Cube) =
     let aggDesigns = aggDesignQuery
-    aggDesigns
-    |> Seq.map (fun aggInfo -> updateAgg aggInfo cConn) 
+    Seq.toList aggDesigns
+    |> List.map (fun (aggInfo:AggDesign) -> updateAgg aggInfo cConn) 
 
+    0
 
     
