@@ -1,7 +1,7 @@
 ﻿module CD.Program
 
+open DataConnections.CubeConnection  
 open GetCubeVersion 
-open CubeConnection  
 open RemoveUnwantedDimensions
 open CreateAggregations
 open Operators

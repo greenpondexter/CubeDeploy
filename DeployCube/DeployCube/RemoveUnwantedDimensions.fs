@@ -1,13 +1,14 @@
 ﻿module RemoveUnwantedDimensions
 
-open SqlConnection
+open DataConnections.SqlConnection
+open DataConnections.Tables
 open System.Data
 open System.Data.Linq
-open CubeConnection 
+open DataConnections.CubeConnection 
 open Microsoft.AnalysisServices 
 open Microsoft.AnalysisServices.Hosting 
 
-let miParmsTable = db.MI_PARMS
+let miParmsTable = miParmsTable
 
 type ParmConfig = {
        claim : bool; 

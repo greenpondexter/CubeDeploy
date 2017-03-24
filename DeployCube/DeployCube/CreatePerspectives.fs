@@ -1,9 +1,9 @@
 ﻿module CreatePerspectives
 
-open SqlConnection
+open DataConnections.SqlConnection
 open System.Data
 open System.Data.Linq
-open CubeConnection 
+open DataConnections.CubeConnection 
 open Microsoft.AnalysisServices 
 open Microsoft.AnalysisServices.Hosting 
 

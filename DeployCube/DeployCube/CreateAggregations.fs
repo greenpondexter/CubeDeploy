@@ -1,14 +1,15 @@
 ﻿module CreateAggregations
 
-open SqlConnection
+open DataConnections.SqlConnection
+open DataConnections.Tables
 open System.Data
 open System.Data.Linq
-open CubeConnection 
+open DataConnections.CubeConnection
 open Microsoft.AnalysisServices 
 open Microsoft.AnalysisServices.Hosting 
 
-let aggDesignTable = db.ASRPT_AS_METADATA_AGGREGATIONDESIGN
-let aggTable = db.ASRPT_AS_METADATA_AGGREGATION
+let aggDesignTable = aggDesignTable  
+let aggTable = aggTable 
 
 type AggDesign = {
     desId : string;

@@ -56,14 +56,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Compile Include="SqlConnection.fs" />
-    <Compile Include="CubeConnection.fs" />
     <Compile Include="CheckDatabaseVersion.fs" />
     <Compile Include="RemoveUnwantedDimensions.fs" />
     <Compile Include="CreateAggregations.fs" />
     <Compile Include="CreatePerspectives.fs" />
     <Compile Include="Operators.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataConnections\DataConnections.fsproj">
+      <Name>DataConnections</Name>
+      <Project>{0d1d8caa-600e-4bbf-8b97-6f31f5e446ab}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

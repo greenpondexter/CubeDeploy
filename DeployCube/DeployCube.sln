@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DeployCube", "DeployCube\DeployCube.fsproj", "{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DataConnections", "DataConnections\DataConnections.fsproj", "{0D1D8CAA-600E-4BBF-8B97-6F31F5E446AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACB7CF6F-5B4D-4200-99A6-D786329C9E2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D1D8CAA-600E-4BBF-8B97-6F31F5E446AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D1D8CAA-600E-4BBF-8B97-6F31F5E446AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D1D8CAA-600E-4BBF-8B97-6F31F5E446AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D1D8CAA-600E-4BBF-8B97-6F31F5E446AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
