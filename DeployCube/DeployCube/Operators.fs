@@ -1,4 +1,4 @@
-﻿module Operators
+﻿module Ops
 
     module List =
                 

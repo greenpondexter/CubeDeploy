@@ -56,11 +56,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Compile Include="Operators.fs" />
     <Compile Include="CheckDatabaseVersion.fs" />
     <Compile Include="RemoveUnwantedDimensions.fs" />
     <Compile Include="CreateAggregations.fs" />
     <Compile Include="CreatePerspectives.fs" />
-    <Compile Include="Operators.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

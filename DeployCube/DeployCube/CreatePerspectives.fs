@@ -9,12 +9,15 @@ open System.Data.Linq
 open DataConnections.CubeConnection 
 open Microsoft.AnalysisServices 
 open Microsoft.AnalysisServices.Hosting 
+open Ops
 
 let persTable = persTable
 let persDimAttTable = persDimAttTable
 let persDimHierTable = persDimHierTable 
 let persMeasTable = persMeasTable
 let persCalcMeasTable = persCalcMeasTable
+
+let (<*>) = List.apply 
 
 type Perspective = {
     persId : string
@@ -77,3 +80,45 @@ let persCalcMeasQuery (pers:string): seq<PersCalcMeas> =
         where (row.PerspectiveID = pers)
         select row
     } |> Seq.map (fun row -> {calcMeasId = row.CalculatedMeasureID; includeIn = row.IncludeInPerspective})
+
+
+
+let checkPerspectiveExistence (con: Cube) (pers: string) = 
+       
+      let persExist = con.Perspectives.ContainsName(pers)
+      
+      match persExist with
+      |true     -> con.Perspectives.Remove(pers) :> obj 
+      |false    -> con.Perspectives.Add(pers)    :> obj
+
+
+let createAttributePerspectives (con: Cube) (pers: string) =
+   
+    let attPers = persDimAttQuery pers
+
+    let getDim (persId: string) (dim: string * string) =
+        let perspective = con.Perspectives.Find(persId)
+        if (perspective.Dimensions.Contains((fst dim)) = true) then
+            perspective.Dimensions.Find((fst dim)), snd dim
+        else 
+            perspective.Dimensions.Add((fst dim)), snd dim
+   
+    attPers
+    |> Seq.map (fun persAtt -> getDim pers (persAtt.cubeDimId, persAtt.cubeDimAttId ) ) 
+    |> Seq.map (fun dimInfo -> let (dim, att) = dimInfo
+                               dim.Attributes.Add(att)
+                                )
+
+let createPerspectives (cConn: Cube) =
+
+    let perspectives = persQuery 
+    perspectives
+    |> Seq.map (fun pers -> (checkPerspectiveExistence cConn pers.persId
+                             createAttributePerspectives cConn pers.persId
+                                    
+                ))
+                            
+    
+     
+
+    0

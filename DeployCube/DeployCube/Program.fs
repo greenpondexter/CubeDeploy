@@ -4,7 +4,8 @@ open DataConnections.CubeConnection
 open GetCubeVersion 
 open RemoveUnwantedDimensions
 open CreateAggregations
-open Operators
+open CreatePerspectives 
+open Ops
 
 let main() = 
 
