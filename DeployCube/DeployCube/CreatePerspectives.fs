@@ -109,11 +109,33 @@ let createAttributePerspectives (con: Cube) (pers: string) =
                                 dim.Attributes.Add(att)
                 )
 
+
+let createHierarchyPerspectives (con:Cube) (pers: string) =
+
+    let hierPers = persDimHierQuery pers
+
+    let getHierPers (pdh : PersDimHier)  =
+        
+        let perspective = con.Perspectives.Find(pers) 
+        
+        if (perspective.Dimensions.Contains(pdh.cubeDimId) = true) then
+            perspective.Dimensions.Find(pdh.cubeDimId), pdh.cubeDimHierId
+        else
+            perspective.Dimensions.Add(pdh.cubeDimId), pdh.cubeDimHierId
+
+    Seq.toList hierPers
+    |> List.filter (fun hier -> hier.includeIn = true)
+    |> List.map (fun hier -> getHierPers hier)
+    |> List.map (fun persDim -> let (dim, hier) = persDim
+                                dim.Hierarchies.Add(hier))    
+    0
+
 let createPerspectives (cConn: Cube) =
 
     let perspectives = persQuery 
     Seq.toList perspectives
     |> List.map (fun pers -> checkPerspectiveExistence cConn pers.persId
-                             createAttributePerspectives cConn pers.persId
+                             //createAttributePerspectives cConn pers.persId
+                             createHierarchyPerspectives cConn pers.persId
                 )
     0
