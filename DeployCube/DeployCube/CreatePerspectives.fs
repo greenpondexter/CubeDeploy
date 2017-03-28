@@ -103,22 +103,17 @@ let createAttributePerspectives (con: Cube) (pers: string) =
         else 
             perspective.Dimensions.Add((fst dim)), snd dim
    
-    attPers
-    |> Seq.map (fun persAtt -> getDim pers (persAtt.cubeDimId, persAtt.cubeDimAttId ) ) 
-    |> Seq.map (fun dimInfo -> let (dim, att) = dimInfo
-                               dim.Attributes.Add(att)
-                                )
+    Seq.toList attPers
+    |> List.map (fun persAtt -> getDim pers (persAtt.cubeDimId, persAtt.cubeDimAttId ) ) 
+    |> List.map (fun dimInfo -> let (dim, att) = dimInfo
+                                dim.Attributes.Add(att)
+                )
 
 let createPerspectives (cConn: Cube) =
 
     let perspectives = persQuery 
-    perspectives
-    |> Seq.map (fun pers -> (checkPerspectiveExistence cConn pers.persId
+    Seq.toList perspectives
+    |> List.map (fun pers -> checkPerspectiveExistence cConn pers.persId
                              createAttributePerspectives cConn pers.persId
-                                    
-                ))
-                            
-    
-     
-
+                )
     0
