@@ -128,14 +128,48 @@ let createHierarchyPerspectives (con:Cube) (pers: string) =
     |> List.map (fun hier -> getHierPers hier)
     |> List.map (fun persDim -> let (dim, hier) = persDim
                                 dim.Hierarchies.Add(hier))    
-    0
+    
+let createMeasurePerspectives (con:Cube) (pers: string) =
+    
+    let measPers = persMeasQuery pers
+
+    let getMeas (pm : PersMeas) =
+        
+        let perspective = con.Perspectives.Find(pers) 
+        
+        if (perspective.MeasureGroups.Contains(pm.measGrpId) = true) then
+            perspective.MeasureGroups.Find(pm.measGrpId), pm.measId
+        else
+            perspective.MeasureGroups.Add(pm.measGrpId), pm.measId
+
+    Seq.toList measPers 
+    |> List.filter (fun meas -> meas.includeIn = true)
+    |> List.map (fun meas -> getMeas meas)
+    |> List.map (fun persMeas -> let (mg,meas) = persMeas
+                                 mg.Measures.Add(meas)
+                )    
+
+let createCalcMeasurePerspectives (con:Cube) (pers: string) =
+
+    let calcPers = persCalcMeasQuery pers
+    
+    Seq.toList calcPers
+    |> List.filter (fun calc -> calc.includeIn = true)
+    |> List.map (fun calc -> con.Perspectives   
+                                .Find(pers)
+                                .Calculations
+                                .Add(calc.calcMeasId) 
+                )
 
 let createPerspectives (cConn: Cube) =
 
     let perspectives = persQuery 
     Seq.toList perspectives
     |> List.map (fun pers -> checkPerspectiveExistence cConn pers.persId
-                             //createAttributePerspectives cConn pers.persId
+                             createAttributePerspectives cConn pers.persId
                              createHierarchyPerspectives cConn pers.persId
+                             createMeasurePerspectives cConn pers.persId
+                             createCalcMeasurePerspectives cConn pers.persId
                 )
-    0
+    
+    cConn.Update(UpdateOptions.ExpandFull, UpdateMode.Default)
