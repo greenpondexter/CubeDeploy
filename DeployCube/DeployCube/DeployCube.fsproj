@@ -61,6 +61,7 @@
     <Compile Include="RemoveUnwantedDimensions.fs" />
     <Compile Include="CreateAggregations.fs" />
     <Compile Include="CreatePerspectives.fs" />
+    <Compile Include="UpdateMeasureNames.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

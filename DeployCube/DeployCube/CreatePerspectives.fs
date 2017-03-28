@@ -2,9 +2,9 @@
 
 open DataConnections.SqlConnection
 open DataConnections.CubeConnection 
-open DataConnections.Tables
+open DataConnections.Tables 
 
-open System.Data
+open System.Data 
 open System.Data.Linq
 open DataConnections.CubeConnection 
 open Microsoft.AnalysisServices 
