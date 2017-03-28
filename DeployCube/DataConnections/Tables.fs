@@ -21,3 +21,7 @@ let persCalcMeasTable = db.ASRPT_AS_METADATA_PERSPECTIVECALCULATEDMEASURE
 
 //UpdateMeasureNames
 let measTable = db.ASRPT_AS_METADATA_MEASURE
+
+//UpdateHierarchyNames
+let hierTable = db.ASRPT_AS_METADATA_DIMENSIONHIERARCHY
+let hierLevelTable = db.ASRPT_AS_METADATA_DIMENSIONHIERARCHYLEVEL

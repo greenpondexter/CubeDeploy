@@ -57,8 +57,8 @@ let checkMeasureExistence (con:Cube) (meas: MeasureInfo) (measCon: MeasureGroup 
     match measTrans with
     |null -> printfn "No Translation Object for Measure: %s" measure.Name
              false
-    |_ -> measure.Translations.Item(0).Caption = measCaption
-          measure.Translations.Item(0).DisplayFolder = measDisplayFolder
+    |_    -> measure.Translations.Item(0).Caption = measCaption
+             measure.Translations.Item(0).DisplayFolder = measDisplayFolder
 
 let updateMeasure (con: Cube) (meas: MeasureInfo) =
     
